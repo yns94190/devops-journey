@@ -17,9 +17,18 @@ jobs:
       - run: pip install psycopg2-binary pytest
       - run: python3 -m pytest semaine-02/compose/app/test_app.py -v
 
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/python
+
   build:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, sast]
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
