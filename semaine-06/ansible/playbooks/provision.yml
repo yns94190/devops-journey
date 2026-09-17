@@ -1,0 +1,45 @@
+---
+- name: Provisionner le VPS (Docker + firewalld)
+  hosts: vps
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Installer dnf-utils
+      ansible.builtin.dnf:
+        name: dnf-utils
+        state: present
+
+    - name: Ajouter le dépôt officiel Docker (RHEL)
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/rhel/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: "0644"
+
+    - name: Installer Docker CE + plugin compose
+      ansible.builtin.dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Activer et démarrer Docker
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Ajouter l'utilisateur au groupe docker
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Autoriser le service http dans firewalld
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        state: enabled
+        immediate: true

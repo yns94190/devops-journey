@@ -1,0 +1,5 @@
+---
+# Provisionne le VPS from scratch puis déploie l'app.
+# Usage : ansible-playbook playbooks/site.yml -i inventory/hosts.ini
+- ansible.builtin.import_playbook: provision.yml
+- ansible.builtin.import_playbook: deploy-app.yml
