@@ -30,6 +30,15 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 ### ⬜ Semaines 05-12 — Non commencées
 - Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 04
 
+## Règles de travail
+- Automatiser tout ce qui est répétable
+- Autonomie : corriger seul les erreurs non critiques, demander confirmation si destructif
+- Qualité : tester et valider avant de marquer terminé
+- Documentation : mettre à jour README.md et CLAUDE.md après chaque étape
+- Tokens : réponses courtes, pas de répétitions
+- Workflow Git : toujours branche feat/ → PR → merge
+- Après chaque tâche : résultat en 1 ligne + prochaine étape
+
 ## Prochaine étape suggérée
 1. Documenter un scan Trivy réel (semaine-04)
 2. Planifier le contenu des semaines 05-12
