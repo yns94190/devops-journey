@@ -1,0 +1,5 @@
+# Copier ce fichier en hosts.ini (gitignored) et renseigner la vraie IP.
+# Voir .vps-local.md à la racine du repo pour l'IP réelle du VPS Oracle.
+
+[vps]
+oracle-vps ansible_host=<IP_VPS> ansible_user=opc

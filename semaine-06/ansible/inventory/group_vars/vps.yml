@@ -1,0 +1,3 @@
+repo_url: https://github.com/yns94190/devops-journey.git
+app_dir: /home/opc/devops-journey
+compose_dir: "{{ app_dir }}/semaine-02/compose"
