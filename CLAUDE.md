@@ -27,11 +27,13 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-04/notes.md`
 - **Reste à faire :** documenter les résultats concrets d'un scan Trivy sur `devops-app:latest` et corriger les CVE trouvées
 
-### 🟡 Semaine 05 — VPS (sujet correct, en attente d'instructions)
-- Le sujet réel de la semaine 05 est **VPS**, pas Kubernetes
-- `semaine-05/notes.md` contient actuellement des notes Kubernetes écrites par erreur — à corriger/remplacer par du contenu VPS
-- Kubernetes n'a pas été installé (l'installation de `kind`/`kubectl` a été stoppée avant complétion, rien n'a été déployé)
-- **Reste à faire :** attendre les instructions pour le contenu VPS de la semaine 05
+### 🟡 Semaine 05 — VPS (Docker + app déployés, réseau cloud à finir)
+- VPS Oracle Cloud (Free Tier), ARM/aarch64, Oracle Linux 9, user `opc`, accès SSH par clé (IP réelle gardée hors repo, voir `.vps-local.md` non versionné)
+- Docker CE installé et actif (`systemctl enable --now docker`)
+- `firewalld` configuré : `ssh` + `http` (port 80) autorisés
+- App de semaine-02 clonée et déployée sur le VPS (`docker compose up -d --build`) — les 3 containers tournent, réponse OK en local sur le VPS (`curl http://localhost`)
+- Notes : `semaine-05/notes.md`
+- **Reste à faire :** ouvrir le port 80 dans la **Security List / NSG** du VCN sur la console Oracle Cloud (le firewall OS est ouvert mais l'accès externe timeout — bloqué au niveau réseau cloud, hors de portée SSH/CLI)
 
 ### ⬜ Semaines 06-12 — Non commencées
 - Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 05

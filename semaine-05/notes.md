@@ -1,39 +1,48 @@
-# Semaine 05 — Kubernetes (bases)
+# Semaine 05 — VPS
 
-## Concepts clés
-- **Pod** : plus petite unité déployable, un ou plusieurs containers partageant réseau/stockage
-- **Deployment** : gère un ensemble de pods (réplicas, rolling update, rollback)
-- **Service** : expose un ensemble de pods (ClusterIP, NodePort, LoadBalancer)
-- **ConfigMap** : configuration non sensible injectée dans les pods
-- **Secret** : données sensibles (mots de passe, tokens), encodées en base64
-- **Namespace** : isolation logique de ressources dans un cluster
-- **kubelet / kube-apiserver / etcd** : composants du control plane
+## Environnement
+- Provider : Oracle Cloud (Free Tier), instance ARM (aarch64)
+- OS : Oracle Linux 9
+- User : `opc` (utilisateur par défaut Oracle Linux, sudoer)
+- Accès : SSH par clé publique (pas de mot de passe)
 
-## Environnement local
-- `kind` ou `minikube` pour un cluster Kubernetes local
-- `kubectl` : CLI de pilotage du cluster
-
-## Commandes essentielles
+## Installation Docker (Oracle Linux 9 / dnf)
 ```bash
-kubectl get pods
-kubectl get deployments
-kubectl get services
-kubectl describe pod <nom>
-kubectl logs <nom>
-kubectl exec -it <nom> -- bash
-kubectl apply -f fichier.yaml
-kubectl delete -f fichier.yaml
-kubectl scale deployment <nom> --replicas=3
-kubectl rollout status deployment <nom>
-kubectl rollout undo deployment <nom>
+sudo dnf -y install dnf-utils
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # se reconnecter pour que ça prenne effet
 ```
 
-## À réaliser
-- Déployer l'app Python de la semaine 02 sur un cluster local (kind/minikube)
-- Manifests : `Deployment` (app) + `Service` (ClusterIP ou NodePort) + `ConfigMap`/`Secret` pour les variables DB
-- Tester le scaling (`kubectl scale`) et un rolling update
+## Firewall (firewalld)
+Oracle Linux utilise `firewalld` (contrairement à Ubuntu/`ufw`).
+```bash
+sudo firewall-cmd --list-all                    # état actuel
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+```
+- `ssh` et `dhcpv6-client` étaient déjà autorisés par défaut
+- `http` (port 80) ajouté pour exposer l'app
+
+## ⚠️ Spécificité Oracle Cloud : double firewall
+Sur Oracle Cloud, le trafic passe par **deux couches** de firewall :
+1. **`firewalld`** sur l'instance (OS) — configuré ci-dessus
+2. **Security List / Network Security Group** du VCN (niveau réseau cloud, dans la console OCI)
+
+Une route bloquée par la Security List ne sera jamais visible dans `firewalld` : `curl` en local sur le VPS peut réussir alors que l'accès externe timeout. Il faut ajouter une règle d'ingress (ex: TCP/80, source `0.0.0.0/0`) dans **Networking → Virtual Cloud Networks → Security Lists** de la console OCI en plus de la config `firewalld`.
+
+## Déploiement de l'app (semaine-02)
+```bash
+git clone https://github.com/yns94190/devops-journey.git
+cd devops-journey/semaine-02/compose
+# créer .env (voir README racine pour les clés attendues)
+sudo docker compose up -d --build
+sudo docker compose ps
+curl http://localhost
+```
 
 ## Bonnes pratiques
-- Toujours définir des `requests`/`limits` CPU/mémoire sur les containers
-- Ne jamais mettre de secrets en clair dans un manifest versionné
-- Utiliser des `readinessProbe` / `livenessProbe` pour la santé des pods
+- Toujours vérifier les deux couches de firewall sur un cloud provider (OS + réseau cloud)
+- Ne jamais désactiver `firewalld` par facilité — n'ouvrir que les ports nécessaires
+- Générer les secrets (`.env`) sur la machine cible plutôt que de les transporter en clair
