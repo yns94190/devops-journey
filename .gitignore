@@ -4,3 +4,9 @@ __pycache__/
 .pytest_cache/
 .vps-local.md
 semaine-06/ansible/inventory/hosts.ini
+
+# Terraform (semaine-07)
+semaine-07/terraform/.terraform/
+semaine-07/terraform/terraform.tfvars
+semaine-07/terraform/*.tfstate
+semaine-07/terraform/*.tfstate.*

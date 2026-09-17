@@ -45,8 +45,16 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-06/notes.md`
 - **Reste à faire :** explorer `ansible-vault` ; envisager `community.docker.docker_compose_v2` pour un statut `changed` fiable sur le déploiement
 
-### ⬜ Semaines 07-12 — Non commencées
-- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 06
+### ✅ Semaine 07 — Terraform (en cours)
+- Terraform 1.16.3 installé en local sans sudo (binaire dans `~/.local/bin`)
+- `semaine-07/terraform/` : `versions.tf`, `provider.tf` (auth API Key OCI), `variables.tf`, `main.tf`, `outputs.tf`, `terraform.tfvars.example` tracké / `terraform.tfvars` gitignored, `.terraform.lock.hcl` tracké
+- Authentification OCI configurée : paire de clés API générée en local (`~/.oci/`), clé publique ajoutée manuellement dans la console OCI par l'utilisateur (étape non automatisable)
+- Première ressource IaC provisionnée avec succès : VCN (`10.0.0.0/16`) + subnet (`10.0.1.0/24`) sur le tenancy OCI — choix délibéré d'une ressource réseau plutôt qu'une instance compute pour ne pas consommer le quota Always Free déjà utilisé par le VPS de semaine-05
+- Notes : `semaine-07/notes.md`
+- **Reste à faire :** importer le VPS existant dans le state Terraform, ajouter IGW/route table/security list, explorer un backend distant pour le state
+
+### ⬜ Semaines 08-12 — Non commencées
+- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 07
 
 ## Règles de travail
 - Automatiser tout ce qui est répétable
