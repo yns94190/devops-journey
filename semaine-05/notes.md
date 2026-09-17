@@ -25,12 +25,15 @@ sudo firewall-cmd --reload
 - `ssh` et `dhcpv6-client` étaient déjà autorisés par défaut
 - `http` (port 80) ajouté pour exposer l'app
 
-## ⚠️ Spécificité Oracle Cloud : double firewall
-Sur Oracle Cloud, le trafic passe par **deux couches** de firewall :
-1. **`firewalld`** sur l'instance (OS) — configuré ci-dessus
-2. **Security List / Network Security Group** du VCN (niveau réseau cloud, dans la console OCI)
+## ⚠️ Spécificité Oracle Cloud : triple firewall
+Sur Oracle Cloud, le trafic passe par **trois couches** de filtrage, qui doivent TOUTES autoriser le port :
+1. **`firewalld`** sur l'instance (OS)
+2. **Security List** du subnet (VCN, niveau réseau cloud)
+3. **Network Security Group (NSG)** attachée à la VNIC de l'instance (si utilisée)
 
-Une route bloquée par la Security List ne sera jamais visible dans `firewalld` : `curl` en local sur le VPS peut réussir alors que l'accès externe timeout. Il faut ajouter une règle d'ingress (ex: TCP/80, source `0.0.0.0/0`) dans **Networking → Virtual Cloud Networks → Security Lists** de la console OCI en plus de la config `firewalld`.
+Security List et NSG sont **cumulatives** (une seule des deux ne suffit pas si les deux sont en place) : il faut une règle d'ingress TCP/80 (source `0.0.0.0/0`) dans **les deux**. Diagnostic confirmé par `tcpdump` côté VPS : tant que ce n'était pas fait sur les deux couches, aucun paquet SYN externe n'atteignait même la carte réseau de la machine — `firewalld` n'avait rien à voir là-dedans.
+
+**Résultat final :** `curl http://<ip-vps>` → `200 OK` avec la réponse de l'app.
 
 ## Déploiement de l'app (semaine-02)
 ```bash

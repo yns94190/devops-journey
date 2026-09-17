@@ -27,13 +27,14 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-04/notes.md`
 - **Reste à faire :** documenter les résultats concrets d'un scan Trivy sur `devops-app:latest` et corriger les CVE trouvées
 
-### 🟡 Semaine 05 — VPS (Docker + app déployés, réseau cloud à finir)
+### ✅ Semaine 05 — VPS (terminée)
 - VPS Oracle Cloud (Free Tier), ARM/aarch64, Oracle Linux 9, user `opc`, accès SSH par clé (IP réelle gardée hors repo, voir `.vps-local.md` non versionné)
 - Docker CE installé et actif (`systemctl enable --now docker`)
 - `firewalld` configuré : `ssh` + `http` (port 80) autorisés
-- App de semaine-02 clonée et déployée sur le VPS (`docker compose up -d --build`) — les 3 containers tournent, réponse OK en local sur le VPS (`curl http://localhost`)
+- App de semaine-02 clonée et déployée sur le VPS (`docker compose up -d --build`)
+- Accès externe validé : `curl http://<ip-vps>` → `HTTP 200`, réponse de l'app avec la version PostgreSQL
+- Debug réseau : le blocage initial venait de la **Security List ET NSG** OCI (les deux couches doivent autoriser le port 80 en plus du `firewalld` de l'OS) — voir `semaine-05/notes.md`
 - Notes : `semaine-05/notes.md`
-- **Reste à faire :** ouvrir le port 80 dans la **Security List / NSG** du VCN sur la console Oracle Cloud (le firewall OS est ouvert mais l'accès externe timeout — bloqué au niveau réseau cloud, hors de portée SSH/CLI)
 
 ### ⬜ Semaines 06-12 — Non commencées
 - Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 05
@@ -49,4 +50,4 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 
 ## Prochaine étape suggérée
 1. Documenter un scan Trivy réel (semaine-04)
-2. Planifier le contenu des semaines 05-12
+2. Planifier le contenu de la semaine 06 et suivantes
