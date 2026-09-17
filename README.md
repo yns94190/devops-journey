@@ -1,6 +1,7 @@
 # DevOps Journey 🚀
 
 [![CI Pipeline](https://github.com/yns94190/devops-journey/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yns94190/devops-journey/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/container-Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Trivy Scan](https://img.shields.io/badge/security-Trivy%20scan-blue)](https://github.com/yns94190/devops-journey/actions/workflows/ci.yml)
 [![Semgrep SAST](https://img.shields.io/badge/SAST-Semgrep-purple)](https://github.com/yns94190/devops-journey/actions/workflows/ci.yml)
 
@@ -34,7 +35,10 @@ Client
                      (healthcheck + depends_on: service_healthy)
 ```
 
-Secrets injectés via `.env` (jamais commités), volume persistant pour les données Postgres.
+- **Nginx** (`:80`) fait office de reverse proxy : il reçoit toutes les requêtes client et les transfère vers l'app sur `app:8080` (config dans `nginx/nginx.conf`).
+- **App Python** (`:8080`) est un serveur HTTP minimaliste (`http.server`) qui se connecte à PostgreSQL via `psycopg2` et répond avec la version de la base.
+- **PostgreSQL** (`:5432`) stocke les données sur un volume Docker persistant (`postgres_data`), avec un `healthcheck` (`pg_isready`) : l'app ne démarre qu'une fois la base prête (`depends_on: condition: service_healthy`).
+- Tous les identifiants (DB, credentials Postgres) sont injectés via `.env`, jamais commités dans le repo.
 
 ## Pipeline CI/CD
 
@@ -64,11 +68,38 @@ Voir [`CLAUDE.md`](./CLAUDE.md) pour le détail de l'avancement semaine par sema
 
 ## Lancer le projet en local
 
-```bash
-cd semaine-02/compose
-docker compose up --build
-# App accessible via Nginx sur http://localhost
-```
+Prérequis : Docker + Docker Compose installés.
+
+1. **Cloner le repo**
+   ```bash
+   git clone https://github.com/yns94190/devops-journey.git
+   cd devops-journey/semaine-02/compose
+   ```
+2. **Créer le fichier `.env`** (non versionné) avec les variables attendues :
+   ```bash
+   cat > .env << 'EOF'
+   DB_HOST=db
+   DB_NAME=devops
+   DB_USER=yanis
+   DB_PASSWORD=change-me
+   POSTGRES_DB=devops
+   POSTGRES_USER=yanis
+   POSTGRES_PASSWORD=change-me
+   EOF
+   ```
+3. **Builder et lancer la stack**
+   ```bash
+   docker compose up --build
+   ```
+4. **Vérifier que tout tourne**
+   ```bash
+   docker compose ps        # les 3 services doivent être "healthy"/"running"
+   curl http://localhost    # doit retourner "Hello from Docker! DB: PostgreSQL ..."
+   ```
+5. **Arrêter la stack**
+   ```bash
+   docker compose down
+   ```
 
 ## Objectif
 
