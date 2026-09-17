@@ -1,0 +1,9 @@
+# Copier en terraform.tfvars (gitignored) et renseigner les vraies valeurs.
+# Trouvables dans la console OCI : Profil > Détails utilisateur (user_ocid, fingerprint)
+# et Profil > Tenancy (tenancy_ocid).
+
+tenancy_ocid     = "ocid1.tenancy.oc1..<...>"
+user_ocid        = "ocid1.user.oc1..<...>"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+region           = "eu-paris-1"
+compartment_ocid = "ocid1.tenancy.oc1..<...>"
