@@ -25,7 +25,7 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Trivy (scan CVE des images Docker) et Semgrep (SAST, config `p/python`) déjà intégrés dans `ci.yml`
 - Pipeline complet : Push → Test → SAST → Build → Scan Trivy
 - Notes : `semaine-04/notes.md`
-- **Reste à faire :** documenter les résultats concrets d'un scan Trivy sur `devops-app:latest` et corriger les CVE trouvées
+- Scan Trivy réel sur `devops-app:latest` : 57 vulnérabilités (54 HIGH, 3 CRITICAL) avant correction → ajout de `apt-get upgrade` dans `semaine-02/compose/app/Dockerfile` → **44 vulnérabilités (44 HIGH, 0 CRITICAL)** après. Restantes toutes `status: affected` sans patch Debian disponible (util-linux, libacl1, systemd, ncurses) — risque résiduel accepté
 
 ### ✅ Semaine 05 — VPS (terminée)
 - VPS Oracle Cloud (Free Tier), ARM/aarch64, Oracle Linux 9, user `opc`, accès SSH par clé (IP réelle gardée hors repo, voir `.vps-local.md` non versionné)
