@@ -51,6 +51,36 @@ PLAY RECAP: ok=5 changed=2 unreachable=0 failed=0
 - `creates:` sur la tâche `.env` garantit qu'on ne régénère jamais un mot de passe DB existant en re-jouant le playbook
 - `sudo` interactif reste une limite : toute install de paquet système en local (WSL) doit être lancée manuellement par l'utilisateur, pas automatisable par l'agent
 
+## Playbook `provision.yml`
+Automatise l'installation manuelle de la semaine-05 (Docker CE + firewalld) pour pouvoir reprovisionner le VPS from scratch :
+1. Installe `dnf-utils`
+2. Ajoute le dépôt officiel Docker RHEL (`get_url` vers `/etc/yum.repos.d/docker-ce.repo`)
+3. Installe `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-compose-plugin` (module `dnf`, idempotent)
+4. Active et démarre le service Docker (module `systemd`)
+5. Ajoute `opc` au groupe `docker`
+6. Autorise le service `http` dans `firewalld` (module `ansible.posix.firewalld`, déjà présent avec le paquet `ansible` d'Ubuntu)
+
+`become: true` au niveau du play — testé avec le sudo sans mot de passe déjà configuré sur `opc` (image Oracle Linux par défaut).
+
+## Playbook `site.yml`
+Enchaîne `provision.yml` puis `deploy-app.yml` via `import_playbook` — un seul point d'entrée pour reconstruire le VPS et déployer l'app :
+```bash
+ansible-playbook playbooks/site.yml -i inventory/hosts.ini
+```
+
+## Validation idempotence
+Deux exécutions consécutives de `provision.yml` sur le VPS déjà configuré :
+```
+PLAY RECAP: ok=7 changed=0 ...
+```
+Aucun changement détecté — confirme que le playbook peut être rejoué sans effet de bord.
+
+`site.yml` (provision + deploy) sur le VPS déjà provisionné :
+```
+PLAY RECAP: ok=12 changed=2 ...
+```
+Les 2 `changed` viennent de `deploy-app.yml` (`git update` + `docker compose up -d --build`, ce dernier n'étant pas idempotent-aware côté Ansible cf. plus haut) — la partie provisioning reste à `changed=0`.
+
 ## Reste à faire
-- Étendre le playbook à l'installation Docker + firewalld (actuellement fait à la main en semaine-05) pour pouvoir reprovisionner le VPS from scratch
 - Introduire `ansible-vault` pour un secret si un jour le mot de passe DB doit être piloté depuis le control node plutôt que généré côté cible
+- Éventuellement remplacer le `command: docker compose up -d --build` par `community.docker.docker_compose_v2` pour un statut `changed` plus fiable
