@@ -21,15 +21,15 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
   - Doublon à clarifier : `semaine-02/app/` (ancien, juste `app.py` + `Dockerfile`) coexiste avec `semaine-02/compose/app/` — supprimer l'ancien si obsolète
   - Mettre à jour `README.md` racine (ne mentionne encore que semaine-01)
 
-### 🟡 Semaine 03 — GitHub Actions (CI déjà en place, dossier semaine-03/ absent)
+### ✅ Semaine 03 — GitHub Actions (terminée)
 - `.github/workflows/ci.yml` existe et fonctionne (jobs `test`, `sast`, `build`, `security-scan`)
-- Concepts (workflow, job, step, trigger, runner) documentés seulement dans `docs/mode-operatoire.md`
-- **Reste à faire :** créer `semaine-03/` avec des notes structurées, comme pour les semaines 1-2
+- Concepts (workflow, job, step, trigger, runner) documentés dans `semaine-03/notes.md` et `docs/mode-operatoire.md`
 
-### 🟡 Semaine 04 — DevSecOps (CI déjà en place, dossier semaine-04/ absent)
+### ✅ Semaine 04 — DevSecOps (terminée)
 - Trivy (scan CVE des images Docker) et Semgrep (SAST, config `p/python`) déjà intégrés dans `ci.yml`
 - Pipeline complet : Push → Test → SAST → Build → Scan Trivy
-- **Reste à faire :** créer `semaine-04/` avec notes dédiées et documenter les résultats de scan obtenus
+- Notes : `semaine-04/notes.md`
+- **Reste à faire :** documenter les résultats concrets d'un scan Trivy sur `devops-app:latest` et corriger les CVE trouvées
 
 ### ⬜ Semaines 05-12 — Non commencées
 - Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 04
@@ -40,5 +40,5 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 
 ## Prochaine étape suggérée
 1. Finaliser semaine-02 (vrais tests + nettoyage des doublons)
-2. Créer les dossiers `semaine-03/` et `semaine-04/` pour matérialiser ce qui existe déjà dans la CI et `docs/mode-operatoire.md`
+2. Documenter un scan Trivy réel (semaine-04)
 3. Planifier le contenu des semaines 05-12
