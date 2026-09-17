@@ -36,8 +36,15 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Debug réseau : le blocage initial venait de la **Security List ET NSG** OCI (les deux couches doivent autoriser le port 80 en plus du `firewalld` de l'OS) — voir `semaine-05/notes.md`
 - Notes : `semaine-05/notes.md`
 
-### ⬜ Semaines 06-12 — Non commencées
-- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 05
+### ✅ Semaine 06 — Ansible (en cours)
+- Ansible installé en local (WSL, via `apt`)
+- `semaine-06/ansible/` : `ansible.cfg`, inventaire (`hosts.ini` gitignored + `hosts.ini.example` tracké, pattern identique à `.vps-local.md`), `group_vars/vps.yml`
+- Playbook `playbooks/deploy-app.yml` : clone/update du repo sur le VPS, génère `.env` si absent (`creates:`), `docker compose up -d --build`, vérifie la réponse HTTP — testé avec succès sur le VPS Oracle (semaine-05)
+- Notes : `semaine-06/notes.md`
+- **Reste à faire :** étendre le playbook à l'installation Docker/firewalld pour reprovisionner le VPS from scratch ; explorer `ansible-vault`
+
+### ⬜ Semaines 07-12 — Non commencées
+- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 06
 
 ## Règles de travail
 - Automatiser tout ce qui est répétable
@@ -50,4 +57,5 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 
 ## Prochaine étape suggérée
 1. Documenter un scan Trivy réel (semaine-04)
-2. Planifier le contenu de la semaine 06 et suivantes
+2. Étendre le playbook Ansible à l'installation Docker/firewalld (semaine-06)
+3. Planifier le contenu de la semaine 07 et suivantes

@@ -1,0 +1,47 @@
+---
+- name: Déployer l'app semaine-02 sur le VPS
+  hosts: vps
+  gather_facts: false
+
+  tasks:
+    - name: Cloner ou mettre à jour le repo
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: main
+        update: true
+
+    - name: Générer le .env si absent (secret créé sur la machine cible)
+      ansible.builtin.shell: |
+        set -e
+        DBPASS=$(openssl rand -hex 16)
+        cat > .env << EOF
+        DB_HOST=db
+        DB_NAME=devops
+        DB_USER=yanis
+        DB_PASSWORD=${DBPASS}
+        POSTGRES_DB=devops
+        POSTGRES_USER=yanis
+        POSTGRES_PASSWORD=${DBPASS}
+        EOF
+      args:
+        chdir: "{{ compose_dir }}"
+        creates: "{{ compose_dir }}/.env"
+
+    - name: Lancer la stack Docker Compose
+      ansible.builtin.command: docker compose up -d --build
+      args:
+        chdir: "{{ compose_dir }}"
+
+    - name: Vérifier que l'app répond en local sur le VPS
+      ansible.builtin.uri:
+        url: http://localhost
+        return_content: true
+      register: health_check
+      retries: 5
+      delay: 3
+      until: health_check.status == 200
+
+    - name: Afficher la réponse de l'app
+      ansible.builtin.debug:
+        msg: "{{ health_check.content }}"
