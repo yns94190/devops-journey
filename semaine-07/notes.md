@@ -85,6 +85,28 @@ subnet_id = "ocid1.subnet.oc1.eu-paris-1...."
 vcn_id    = "ocid1.vcn.oc1.eu-paris-1...."
 ```
 
+## 7. Le fichier `terraform.tfstate`
+Après `terraform apply`, Terraform a créé `terraform.tfstate` dans `semaine-07/terraform/` (backend local par défaut, pas de backend distant configuré).
+
+**Ce que c'est :** un fichier JSON qui fait correspondre chaque ressource déclarée dans le code (`oci_core_vcn.main`, `oci_core_subnet.main`) à son état réel sur OCI (ID, tous les attributs renvoyés par l'API — y compris ceux calculés comme `route_table_id`, `default_security_list_id`, etc.). C'est la seule source de vérité que Terraform utilise pour savoir ce qui existe déjà et calculer le diff lors du prochain `plan`/`apply`. Sans lui, Terraform ne peut pas savoir qu'une ressource lui appartient déjà et tenterait de la recréer.
+
+**Pourquoi gitignored (`semaine-07/terraform/*.tfstate*`) :**
+- Il contient les OCID réels des ressources et potentiellement des attributs sensibles (selon les ressources gérées, il peut inclure des secrets en clair — mots de passe, clés) — jamais adapté à un repo public
+- C'est un état mutable et local : deux personnes (ou l'agent et l'utilisateur) qui appliquent depuis des copies différentes du state divergent et peuvent corrompre l'infra réelle — un state ne se fusionne pas comme du code
+- En solo sur ce projet, le state local suffit ; en équipe, il faudrait un backend distant partagé (OCI Object Storage, Terraform Cloud...) avec verrouillage, pas un fichier versionné dans Git
+
+## 8. Détruire l'infrastructure : `terraform destroy`
+```bash
+cd semaine-07/terraform
+terraform destroy
+```
+**⚠️ Avertissement :** cette commande supprime **réellement et immédiatement** toutes les ressources gérées par ce state (ici le VCN et le subnet) sur le tenancy OCI — action irréversible, à ne lancer que pour décommissionner volontairement l'infra de cette semaine. Comme pour `apply`, `destroy` affiche d'abord un plan (`- destroy`) et demande une confirmation manuelle (`yes`) avant d'agir ; ne jamais l'enchaîner avec `-auto-approve` sauf certitude absolue. Pas exécuté à ce stade — le VCN et le subnet restent en place.
+
+## Erreurs rencontrées
+- **`~/.oci/config` absent :** le VPS de semaine-05 avait été créé entièrement via la console OCI, donc aucune credential API n'existait en local. Résolu en générant une paire de clés API localement (`openssl genrsa`) et en demandant à l'utilisateur de coller la clé publique dans la console (étape manuelle irréductible, pas automatisable par l'agent).
+- **`sudo` interactif indisponible pour l'agent :** comme pour Ansible en semaine-06, aucune installation nécessitant un mot de passe `sudo` ne peut être lancée par l'agent. Contournement pour Terraform : installation du binaire directement dans `~/.local/bin` (déjà dans le `PATH`), sans passer par un paquet système — aucun `sudo` requis pour Terraform lui-même.
+- **Erreur de quoting PowerShell → WSL → bash :** une commande `curl | grep -o "..."` avec guillemets imbriqués a échoué (`Le terminateur ' est manquant dans la chaîne`) à cause du passage de la commande à travers trois couches de shell (PowerShell, `wsl -e bash -lc`, bash). Corrigé en utilisant une chaîne PowerShell à guillemets simples (pas d'interpolation) pour l'appel externe, laissant les guillemets internes intacts pour bash.
+
 ## Points clés
 - Terraform en binaire local évite le blocage `sudo` interactif rencontré avec Ansible (semaine-06) — pas de mot de passe à fournir
 - L'authentification OCI par API Key nécessite une étape manuelle irréductible dans la console (ajout de la clé publique) — Terraform (ni l'agent) ne peut la remplacer
