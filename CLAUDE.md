@@ -27,8 +27,12 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-04/notes.md`
 - **Reste à faire :** documenter les résultats concrets d'un scan Trivy sur `devops-app:latest` et corriger les CVE trouvées
 
-### ⬜ Semaines 05-12 — Non commencées
-- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 04
+### 🟡 Semaine 05 — Kubernetes (bases, en cours)
+- Concepts (pods, deployments, services, configmaps/secrets) et commandes `kubectl` documentés dans `semaine-05/notes.md`
+- **Reste à faire :** déployer l'app de semaine-02 sur un cluster local (kind/minikube), manifests Deployment/Service/ConfigMap/Secret, test scaling + rolling update
+
+### ⬜ Semaines 06-12 — Non commencées
+- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 05
 
 ## Règles de travail
 - Automatiser tout ce qui est répétable

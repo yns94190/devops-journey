@@ -7,6 +7,7 @@ Parcours DevOps intensif 12 semaines — Yanis Flitti
 - `semaine-02/` → Docker & Docker Compose
 - `semaine-03/` → GitHub Actions (CI/CD)
 - `semaine-04/` → DevSecOps (Trivy, Semgrep)
+- `semaine-05/` → Kubernetes (bases)
 
 ## Objectif
 Maîtriser DevOps / DevSecOps / Cloud en 3 mois par la pratique.
