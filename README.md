@@ -67,6 +67,7 @@ push/PR → test (pytest) ─┐
 | `semaine-07/` | Terraform (VCN + subnet) |
 | `semaine-08/` | Cloud — Terraform (IGW, route table, security list, import VPS) |
 | `semaine-09/` | Kubernetes (k3s) |
+| `semaine-10/` | Monitoring & Observabilité (Prometheus + Grafana) |
 
 Voir [`CLAUDE.md`](./CLAUDE.md) pour le détail de l'avancement semaine par semaine et [`docs/mode-operatoire.md`](./docs/mode-operatoire.md) pour les notes de référence.
 
