@@ -1,0 +1,93 @@
+# kube-prometheus-stack, dimensionné pour le nœud k3s mono-nœud (1 OCPU / 6 Go,
+# Oracle Cloud Free Tier ARM) — cf. semaine-10/notes.md pour le détail des choix.
+
+alertmanager:
+  enabled: false # pas de notifications à router dans un lab solo, inutile ici
+
+# k3s n'expose pas kube-controller-manager / kube-scheduler / kube-proxy / etcd
+# de la même façon qu'un cluster kubeadm classique : ces ServiceMonitors ne
+# feraient que remonter des cibles "down" en permanence.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 2d
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+
+grafana:
+  # Le chart installe par défaut des plugins "Explore Apps" (traces, logs...)
+  # inutiles ici (pas de Loki/Tempo dans ce stack) — leur téléchargement au
+  # démarrage dépassait le délai de la sonde liveness sur ce nœud ARM
+  # contraint, provoquant un redémarrage en boucle.
+  plugins: []
+  livenessProbe:
+    initialDelaySeconds: 180
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 10
+  readinessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 10
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 768Mi # Grafana 13.x (apiserver interne, unified storage) OOMKillait à 256Mi
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 1Gi
+  admin:
+    existingSecret: grafana-admin-credentials
+    userKey: admin-user
+    passwordKey: admin-password
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    path: /grafana
+    pathType: Prefix
+    annotations:
+      traefik.ingress.kubernetes.io/router.middlewares: monitoring-strip-grafana-prefix@kubernetescrd
+  "grafana.ini":
+    server:
+      root_url: "%(protocol)s://%(domain)s/grafana/"
+      serve_from_sub_path: false # Traefik retire déjà le préfixe (cf. grafana-middleware.yaml)
+
+kubeStateMetrics:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 64Mi

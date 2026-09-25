@@ -71,8 +71,18 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-09/notes.md`
 - **Reste à faire :** NetworkPolicy app→postgres, réplicas/HPA, TLS (cert-manager) si domaine pointé un jour
 
-### ⬜ Semaines 10-12 — Non commencées
-- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 09
+### ✅ Semaine 10 — Monitoring & Observabilité (en cours)
+- `kube-prometheus-stack` (Helm, `prometheus-community`) installé sur le cluster k3s de semaine-09 : Prometheus + Grafana + kube-state-metrics + node-exporter. Alertmanager et les monitors kube-controller-manager/scheduler/proxy/etcd désactivés (non pertinents sur k3s, non prioritaires pour un lab solo)
+- Helm installé sans sudo (`~/.local/bin`, même approche que Terraform en semaine-07)
+- Trois pannes de démarrage Grafana diagnostiquées et corrigées successivement (plugins par défaut trop lents, sous-chemin `/grafana` mal géré, puis `OOMKilled` à 256Mi → 768Mi) — cf. `semaine-10/notes.md` pour le détail, chacune avait sa propre cause malgré un symptôme similaire (redémarrage en boucle)
+- Exposition via un `Middleware` Traefik (`stripPrefix`) sur `/grafana`, plutôt que `serve_from_sub_path` côté Grafana — plus robuste
+- Secret `grafana-admin-credentials` créé via `kubectl create secret` (jamais commité)
+- Validé : `curl http://141.253.108.240/grafana/login` → `200 OK`, app de semaine-09 non régressée
+- Notes : `semaine-10/notes.md`
+- **Reste à faire :** explorer les dashboards par défaut, ServiceMonitor applicatif si l'app expose un jour `/metrics`, Alertmanager si besoin d'alerting
+
+### ⬜ Semaines 11-12 — Non commencées
+- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 10
 
 ## Règles de travail
 - Automatiser tout ce qui est répétable
@@ -85,4 +95,4 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 
 ## Prochaine étape suggérée
 1. Backend distant pour le state Terraform (OCI Object Storage)
-2. Planifier le contenu des semaines 10-12
+2. Planifier le contenu des semaines 11-12

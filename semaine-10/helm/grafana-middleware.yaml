@@ -1,0 +1,12 @@
+# Traefik (CRD fournie par k3s) retire le préfixe /grafana avant de transmettre
+# la requête au pod Grafana — évite les pièges classiques de `serve_from_sub_path`
+# (sondes liveness/readiness qui tapent /api/health sans le préfixe, timeouts).
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-grafana-prefix
+  namespace: monitoring
+spec:
+  stripPrefix:
+    prefixes:
+      - /grafana
