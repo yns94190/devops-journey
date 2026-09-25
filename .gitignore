@@ -10,3 +10,6 @@ semaine-07/terraform/.terraform/
 semaine-07/terraform/terraform.tfvars
 semaine-07/terraform/*.tfstate
 semaine-07/terraform/*.tfstate.*
+
+# Kubernetes (semaine-09)
+semaine-09/manifests/secret.yaml

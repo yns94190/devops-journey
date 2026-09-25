@@ -66,8 +66,10 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - **Erreur de diagnostic corrigée** : un `nslookup kubernetes.default` (nom court) échouait avec BusyBox, faisant croire à un conflit nftables/kube-proxy nécessitant de désactiver firewalld. Un test avec le FQDN (`kubernetes.default.svc.cluster.local`) a prouvé que le cluster fonctionnait déjà correctement — firewalld désactivé puis **réactivé** avec la config qui marchait, aucune régression de sécurité conservée
 - `kubectl` utilisable par `opc` sans sudo (kubeconfig copié + `KUBECONFIG` dans `.bashrc`)
 - Port `6443` (API Kubernetes) volontairement non exposé à Internet
+- App de semaine-02 déployée sur le cluster (namespace `devops-app`) : Traefik/ServiceLB réactivés (stack Docker Compose arrêtée pour libérer le port 80), image `compose-app:latest` importée directement dans le containerd de k3s (`docker save | k3s ctr images import -`, pas de registry), nginx non reproduit (Traefik fait déjà office de reverse proxy) — `postgres` (PVC 1Gi local-path) + `app` + `Ingress` déployés via `semaine-09/manifests/`, secret créé via `kubectl create secret` (jamais commité, seul `secret.yaml.example` est tracké)
+- Validation externe : `curl http://141.253.108.240/` → `200 OK`, réponse identique à la version Docker Compose de semaine-05
 - Notes : `semaine-09/notes.md`
-- **Reste à faire :** déployer l'app de semaine-02 sur le cluster (manifests dans `semaine-09/manifests/`), décider de l'exposition (Ingress/Traefik réactivé vs NodePort) et arrêter la stack Docker Compose correspondante
+- **Reste à faire :** NetworkPolicy app→postgres, réplicas/HPA, TLS (cert-manager) si domaine pointé un jour
 
 ### ⬜ Semaines 10-12 — Non commencées
 - Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 09
@@ -82,5 +84,5 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Après chaque tâche : résultat en 1 ligne + prochaine étape
 
 ## Prochaine étape suggérée
-1. Déployer l'app de semaine-02 sur k3s (semaine-09)
-2. Backend distant pour le state Terraform (OCI Object Storage)
+1. Backend distant pour le state Terraform (OCI Object Storage)
+2. Planifier le contenu des semaines 10-12

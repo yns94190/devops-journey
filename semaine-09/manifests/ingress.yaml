@@ -1,0 +1,20 @@
+# Remplace le rôle de reverse proxy que nginx tenait dans la stack Docker Compose
+# de semaine-02 (nginx ne faisait qu'un proxy_pass vers app:8080, sans contenu
+# statique ni logique propre) : Traefik, déjà fourni par k3s, fait exactement ça.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app
+  namespace: devops-app
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app
+                port:
+                  number: 8080
