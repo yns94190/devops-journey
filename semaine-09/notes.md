@@ -79,7 +79,59 @@ Pas de pods Traefik/ServiceLB (désactivés à l'installation, comme prévu).
 - Toujours tester avec un FQDN et des outils fiables avant de diagnostiquer une panne réseau côté cluster
 - `k3s kubectl` (symlink) ignore `~/.kube/config` par défaut sans `KUBECONFIG` explicite, contrairement à un `kubectl` standard
 
+## 7. Déploiement de l'app de semaine-02 sur le cluster
+
+### Choix : Ingress (Traefik) plutôt que NodePort, sans réplique de nginx
+- **Traefik + ServiceLB réactivés** : la stack Docker Compose a été arrêtée (`docker compose down`, libère le port 80), puis k3s réinstallé sans les flags `--disable` (`curl -sfL https://get.k3s.io | sudo sh -` — méthode officielle pour changer les options serveur d'une install existante). `svclb-traefik` (DaemonSet hostPort) + `traefik` tournent, Service `traefik` de type `LoadBalancer` sur `80:31682/TCP, 443:31349/TCP`.
+- **nginx non reproduit dans le cluster** : son unique rôle dans `docker-compose.yml` était un `proxy_pass` vers `app:8080` (aucun contenu statique, aucune logique propre — voir `nginx/nginx.conf`). L'Ingress Traefik fait exactement ce travail nativement ; ajouter un pod nginx en plus aurait été redondant.
+
+### Image applicative sans registre
+k3s embarque son propre containerd, complètement séparé du daemon Docker de l'hôte — l'image `compose-app:latest` construite par `docker compose build` n'est pas visible du cluster. Plutôt que de monter un registre (complexité disproportionnée pour un cluster mono-nœud de lab), import direct de l'image Docker dans le containerd de k3s :
+```bash
+docker save compose-app:latest | sudo /usr/local/bin/k3s ctr images import -
+# docker.io/library/compose-app:latest importée
+```
+Le Deployment référence `compose-app:latest` avec `imagePullPolicy: Never` (empêche toute tentative de pull depuis un registry externe).
+
+### Secrets : même pattern que le reste du repo
+Comme `.env`, `terraform.tfvars` et `hosts.ini`, le vrai `Secret` Kubernetes n'est pas commité — seul un `secret.yaml.example` (template) est suivi dans `semaine-09/manifests/`. Le vrai secret est créé directement sur le cluster :
+```bash
+kubectl create secret generic postgres-credentials -n devops-app \
+  --from-literal=POSTGRES_DB=devops --from-literal=POSTGRES_USER=yanis --from-literal=POSTGRES_PASSWORD=... \
+  --from-literal=DB_HOST=postgres --from-literal=DB_NAME=devops --from-literal=DB_USER=yanis --from-literal=DB_PASSWORD=...
+```
+Un seul Secret partagé entre `postgres` et `app` (`envFrom.secretRef`), fidèle au `.env` unique que docker-compose injectait déjà dans les deux services.
+
+### Manifests (`semaine-09/manifests/`)
+| Fichier | Contenu |
+|---|---|
+| `namespace.yaml` | Namespace `devops-app` |
+| `secret.yaml.example` | Template du Secret (le vrai est gitignored, créé via `kubectl create secret`) |
+| `postgres.yaml` | PVC (`local-path`, 1Gi) + Deployment (`strategy: Recreate`, readinessProbe `pg_isready`) + Service |
+| `app.yaml` | Deployment (image importée, `imagePullPolicy: Never`) + Service |
+| `ingress.yaml` | Ingress `traefik` → Service `app:8080` |
+
+### Validation
+```
+kubectl get pods -n devops-app
+app-...        1/1   Running
+postgres-...   1/1   Running
+
+kubectl get pvc -n devops-app        # postgres-data  Bound  1Gi  local-path
+kubectl get ingress -n devops-app    # app  traefik  *  10.0.0.157  80
+
+curl http://141.253.108.240/
+HTTP/1.1 200 OK
+Hello from Docker! DB: PostgreSQL 16.15 on aarch64-unknown-linux-musl...
+```
+Réponse identique à celle validée en semaine-05 avec Docker Compose — migration transparente côté utilisateur final.
+
+## Points clés (déploiement)
+- Sans registry, `docker save | k3s ctr images import -` est le chemin le plus simple pour faire tourner une image locale sur k3s en lab mono-nœud — `imagePullPolicy: Never` est indispensable pour éviter un `ErrImagePull`
+- Un Ingress Controller (Traefik, déjà fourni par k3s) remplace nativement un reverse proxy nginx qui ne faisait que du `proxy_pass` — pas besoin de le porter tel quel dans le cluster
+- Secrets Kubernetes suivent le même principe que les autres fichiers sensibles du repo : jamais commités, seul un template l'est
+
 ## Reste à faire
-- Décider du mode d'exposition de l'app de semaine-02 sur k3s (Ingress + réactivation de Traefik, ou NodePort) et arrêter la stack Docker Compose correspondante pour libérer le port 80
-- Écrire les manifests (`semaine-09/manifests/`) : Deployment app, Service, ConfigMap/Secret pour la config PostgreSQL, StatefulSet ou Deployment + PVC pour PostgreSQL
-- Déployer et valider l'accès externe à l'app via le cluster
+- `NetworkPolicy` pour restreindre `app → postgres` (actuellement tout pod du namespace peut atteindre `postgres:5432`)
+- `HorizontalPodAutoscaler` / réplicas > 1 pour `app` (actuellement mono-replica, cohérent avec les ressources du nœud)
+- TLS sur l'Ingress (cert-manager + Let's Encrypt) si un nom de domaine est un jour pointé vers le VPS
