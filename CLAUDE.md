@@ -60,8 +60,17 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-08/notes.md`
 - **Reste à faire :** backend distant pour le state (reporté depuis semaine-07), NSG par service, planifier la suite (semaines 09-12)
 
-### ⬜ Semaines 09-12 — Non commencées
-- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 08
+### ✅ Semaine 09 — Kubernetes (k3s) (en cours)
+- k3s v1.36.4+k3s1 installé sur `devops-server` (semaine-05) via le script officiel, avec `--disable traefik --disable servicelb` (évite le conflit de port 80/443 avec la stack Docker Compose de semaine-02 encore active) — nœud `Ready`, rôle `control-plane`
+- Résolu un conflit firewalld/k3s sur Oracle Linux 9 : CIDR pods (`10.42.0.0/16`) et services (`10.43.0.0/16`) ajoutés à la zone `trusted`, port kubelet `10250/tcp` ouvert en zone `public`, masquerade activé — `metrics-server` passé `1/1 Running`
+- **Erreur de diagnostic corrigée** : un `nslookup kubernetes.default` (nom court) échouait avec BusyBox, faisant croire à un conflit nftables/kube-proxy nécessitant de désactiver firewalld. Un test avec le FQDN (`kubernetes.default.svc.cluster.local`) a prouvé que le cluster fonctionnait déjà correctement — firewalld désactivé puis **réactivé** avec la config qui marchait, aucune régression de sécurité conservée
+- `kubectl` utilisable par `opc` sans sudo (kubeconfig copié + `KUBECONFIG` dans `.bashrc`)
+- Port `6443` (API Kubernetes) volontairement non exposé à Internet
+- Notes : `semaine-09/notes.md`
+- **Reste à faire :** déployer l'app de semaine-02 sur le cluster (manifests dans `semaine-09/manifests/`), décider de l'exposition (Ingress/Traefik réactivé vs NodePort) et arrêter la stack Docker Compose correspondante
+
+### ⬜ Semaines 10-12 — Non commencées
+- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 09
 
 ## Règles de travail
 - Automatiser tout ce qui est répétable
@@ -73,5 +82,5 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Après chaque tâche : résultat en 1 ligne + prochaine étape
 
 ## Prochaine étape suggérée
-1. Backend distant pour le state Terraform (OCI Object Storage)
-2. Planifier le contenu des semaines 09-12
+1. Déployer l'app de semaine-02 sur k3s (semaine-09)
+2. Backend distant pour le state Terraform (OCI Object Storage)
