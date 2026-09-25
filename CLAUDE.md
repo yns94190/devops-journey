@@ -45,16 +45,23 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Notes : `semaine-06/notes.md`
 - **Reste à faire :** explorer `ansible-vault` ; envisager `community.docker.docker_compose_v2` pour un statut `changed` fiable sur le déploiement
 
-### ✅ Semaine 07 — Terraform (en cours)
+### ✅ Semaine 07 — Terraform (terminée)
 - Terraform 1.16.3 installé en local sans sudo (binaire dans `~/.local/bin`)
 - `semaine-07/terraform/` : `versions.tf`, `provider.tf` (auth API Key OCI), `variables.tf`, `main.tf`, `outputs.tf`, `terraform.tfvars.example` tracké / `terraform.tfvars` gitignored, `.terraform.lock.hcl` tracké
 - Authentification OCI configurée : paire de clés API générée en local (`~/.oci/`), clé publique ajoutée manuellement dans la console OCI par l'utilisateur (étape non automatisable)
 - Première ressource IaC provisionnée avec succès : VCN (`10.0.0.0/16`) + subnet (`10.0.1.0/24`) sur le tenancy OCI — choix délibéré d'une ressource réseau plutôt qu'une instance compute pour ne pas consommer le quota Always Free déjà utilisé par le VPS de semaine-05
 - Notes : `semaine-07/notes.md`
-- **Reste à faire :** importer le VPS existant dans le state Terraform, ajouter IGW/route table/security list, explorer un backend distant pour le state
 
-### ⬜ Semaines 08-12 — Non commencées
-- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 07
+### ✅ Semaine 08 — Cloud, suite Terraform (en cours)
+- Toujours sur Oracle Cloud (Free Tier) ; code Terraform toujours dans `semaine-07/terraform/` (même state, même VCN) — semaine-08 en est la suite, pas un nouveau stack
+- Ajout de `oci_core_internet_gateway.main`, `oci_core_route_table.main` (route `0.0.0.0/0` → IGW) et `oci_core_security_list.main` (ingress SSH 22 + HTTP 80, egress all) dans `main.tf`, subnet mis à jour pour les référencer — `terraform apply` : 3 ajouts, 1 modification, 0 suppression
+- VPS existant `devops-server` (semaine-05) importé dans le state (`semaine-07/terraform/instance.tf`, `terraform import`) — **attention** : le compte OCI héberge aussi une instance `jobhunter` (projet perso séparé), une première recherche automatisée avait initialement remonté la mauvaise instance ; toujours vérifier par IP publique avant d'importer
+- Après import, `terraform plan` ne montre aucun drift sur la ressource réelle : le bloc `resource` écrit correspond exactement à l'état OCI actuel
+- Notes : `semaine-08/notes.md`
+- **Reste à faire :** backend distant pour le state (reporté depuis semaine-07), NSG par service, planifier la suite (semaines 09-12)
+
+### ⬜ Semaines 09-12 — Non commencées
+- Aucun contenu ni plan détaillé pour l'instant au-delà de la semaine 08
 
 ## Règles de travail
 - Automatiser tout ce qui est répétable
@@ -66,5 +73,5 @@ Environnement : Windows + WSL2 Ubuntu, VS Code (extension WSL), Git/GitHub SSH, 
 - Après chaque tâche : résultat en 1 ligne + prochaine étape
 
 ## Prochaine étape suggérée
-1. Documenter un scan Trivy réel (semaine-04)
-2. Planifier le contenu de la semaine 07 et suivantes
+1. Backend distant pour le state Terraform (OCI Object Storage)
+2. Planifier le contenu des semaines 09-12

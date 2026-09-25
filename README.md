@@ -63,6 +63,9 @@ push/PR → test (pytest) ─┐
 | `semaine-03/` | GitHub Actions (CI/CD) |
 | `semaine-04/` | DevSecOps (Trivy, Semgrep) |
 | `semaine-05/` | VPS |
+| `semaine-06/` | Ansible (provisioning & déploiement) |
+| `semaine-07/` | Terraform (VCN + subnet) |
+| `semaine-08/` | Cloud — Terraform (IGW, route table, security list, import VPS) |
 
 Voir [`CLAUDE.md`](./CLAUDE.md) pour le détail de l'avancement semaine par semaine et [`docs/mode-operatoire.md`](./docs/mode-operatoire.md) pour les notes de référence.
 
